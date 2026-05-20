@@ -10,8 +10,8 @@ const config = {
   tagline: 'Community documentation for NSW Mesh operators, builders, and contributors.',
   favicon: 'img/favicon.svg',
 
-  url: process.env.DOCUSAURUS_URL || `https://${organizationName}.github.io`,
-  baseUrl: process.env.DOCUSAURUS_BASE_URL || `/${projectName}/`,
+  url: process.env.DOCUSAURUS_URL || `https://nswmesh.au`,
+  baseUrl: process.env.DOCUSAURUS_BASE_URL || `/`,
 
   organizationName,
   projectName,
