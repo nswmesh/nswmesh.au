@@ -1,6 +1,8 @@
 // @ts-check
 
-const repo = process.env.DOCUSAURUS_REPOSITORY || process.env.GITHUB_REPOSITORY || 'mukw-labs/NSWMesh';
+const {DISCORD_INVITE_URL} = require('./src/constants/links.js');
+
+const repo = process.env.DOCUSAURUS_REPOSITORY || process.env.GITHUB_REPOSITORY || 'nswmesh/nswmesh.au';
 const [organizationName, projectName] = repo.split('/');
 const isGitHubActions = process.env.GITHUB_ACTIONS === 'true';
 
@@ -72,6 +74,11 @@ const config = {
             sidebarId: 'wikiSidebar',
             position: 'left',
             label: 'Wiki'
+          },
+          {
+            href: DISCORD_INVITE_URL,
+            label: 'Discord',
+            position: 'right'
           },
           {
             href: `https://corescope.nswmesh.au`,

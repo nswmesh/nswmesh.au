@@ -13,7 +13,7 @@ Public maps are useful for checking nearby repeaters, understanding rough covera
 | Map | Link | Data source | Notes |
 | --- | --- | --- | --- |
 | NSWMesh CoreScope | [corescope.nswmesh.au](https://corescope.nswmesh.au) | NSWMesh MQTT | NSWMesh CoreScope map. |
-| NSWMesh MQTT LiveMap | [map.wmcd.net.au](https://map.wmcd.net.au/) | NSWMesh MQTT | NSWMesh mqtt-live-map (alternate). |
+| NSWMesh MQTT LiveMap | [map.nswmesh.au](https://map.nswmesh.au/) | NSWMesh MQTT | NSWMesh mqtt-live-map (alternate). |
 | NSWMesh Interference | [interference.nswmesh.au](https://interference.nswmesh.au/) | ACMA | A guidance tool for checking nearby licensed radio services and potential interference when selecting repeater or node locations. It helps identify crowded spectrum areas and supports more informed MeshCore deployment planning across the 915 MHz band. |
 | Beefmesh | [beefmesh.link](https://beefmesh.link) | NSWMesh MQTT | Beefmesh map. |
 | EastMesh | [map.eastmesh.au](https://map.eastmesh.au/) | EastMesh observers | Aus Eastern Mesh live map. |
