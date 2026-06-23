@@ -60,6 +60,7 @@ Examples:
 | `au-nsw-gos` | Central Coast scoped traffic. | <CopyCommand command="region put au-nsw-gos" /><br /><CopyCommand command="region allowf au-nsw-gos" /> | Gosford |
 | `au-nsw-ntl` | Newcastle and Hunter scoped traffic. | <CopyCommand command="region put au-nsw-ntl" /><br /><CopyCommand command="region allowf au-nsw-ntl" /> | Newcastle |
 | `au-nsw-wol` | Illawarra and Wollongong scoped traffic. | <CopyCommand command="region put au-nsw-wol" /><br /><CopyCommand command="region allowf au-nsw-wol" /> | Wollongong |
+| `au-nsw-bhs` | Bathurst and Western NSW scoped traffic. | <CopyCommand command="region put au-nsw-bhs" /><br /><CopyCommand command="region allowf au-nsw-bhs" /> | Bathurst |
 | Save | Save the regions. | <CopyCommand command="region save" /> | Everyone |
 
 A Sydney-specific message belongs in a Sydney channel scoped to `au-nsw-syd`; a state-wide message belongs in an NSW channel scoped to `au-nsw`; general first contact can stay in Public.
