@@ -507,3 +507,539 @@ pre {
     max-height: 48px;
   }
 }
+
+/* Region map (docs/meshcore/channels.md): on-map IATA labels */
+
+.leaflet-tooltip.nswmesh-region-label {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: #f43f5e;
+  font-family: var(--ifm-heading-font-family);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: center;
+  transition: color 0.15s ease-out;
+}
+
+.nswmesh-region-label__text {
+  display: inline-block;
+  transform: scale(1);
+  transform-origin: center;
+  transition: transform 0.15s ease-out;
+}
+
+.nswmesh-region-label--hover .nswmesh-region-label__text {
+  transform: scale(1.18);
+}
+
+[data-theme='dark'] .leaflet-tooltip.nswmesh-region-label {
+  color: #fb7185;
+}
+
+.leaflet-tooltip.nswmesh-region-label.nswmesh-region-label--future,
+[data-theme='dark'] .leaflet-tooltip.nswmesh-region-label.nswmesh-region-label--future {
+  color: #9ca3af;
+}
+
+/* Satellite/OSM imagery is too busy for the usual status colours to stay legible on their
+   own, so a black drop shadow is added underneath; the colours themselves stay unchanged */
+.nswmesh-region-map--busy-basemap .leaflet-tooltip.nswmesh-region-label {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 1px 3px rgba(0, 0, 0, 0.9) !important;
+}
+
+/* Region map: hover glow applied to a region's polygon on mouseover/click */
+
+.nswmesh-region-hover {
+  cursor: pointer;
+  filter: drop-shadow(0 0 6px rgba(225, 29, 72, 0.65));
+  transition: filter 0.15s ease-out;
+}
+
+.nswmesh-region-hover--future {
+  cursor: pointer;
+  filter: drop-shadow(0 0 6px rgba(113, 128, 150, 0.55));
+  transition: filter 0.15s ease-out;
+}
+
+.nswmesh-region-map__error {
+  color: var(--ifm-color-danger);
+  font-size: 0.9rem;
+}
+
+/* Region map: NSW Mesh logo badge, purely decorative so pointer-events are disabled */
+
+.nswmesh-region-map__logo {
+  bottom: 0.75rem;
+  display: flex;
+  left: 0.75rem;
+  position: absolute;
+  z-index: 1000;
+}
+
+.nswmesh-region-map__logo-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  padding: 0;
+}
+
+.nswmesh-region-map__logo img {
+  height: 2.5rem;
+  width: auto;
+}
+
+/* Easter egg: click the logo to cycle cow > penguin, penguin > cow, then nothing */
+
+@keyframes nswmesh-egg-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(-15deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.15) rotate(8deg);
+  }
+  80% {
+    transform: scale(0.95) rotate(-4deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.nswmesh-region-map__easter-egg {
+  align-items: center;
+  animation: nswmesh-egg-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--nswmesh-map-border);
+  border-radius: 8px;
+  bottom: 3.5rem;
+  display: flex;
+  font-size: 1.3rem;
+  gap: 0.4rem;
+  left: 0;
+  padding: 0.35rem 0.6rem;
+  position: absolute;
+  z-index: 1000;
+}
+
+.nswmesh-region-map__easter-egg-arrow {
+  color: var(--ifm-font-color-secondary);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Region map: legend, with an expandable panel per status */
+
+.nswmesh-region-map__legend {
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--nswmesh-map-border);
+  border-radius: 8px;
+  box-shadow: none;
+  color: var(--ifm-font-color-base);
+  font-family: var(--ifm-font-family-base);
+  font-size: 0.85rem;
+  padding: 0.5rem 0.75rem;
+  position: absolute;
+  right: 0.75rem;
+  top: 0.75rem;
+  z-index: 1000;
+}
+
+.nswmesh-region-map__legend-header {
+  align-items: center;
+  display: flex;
+  font-weight: 600;
+  gap: 0.5rem;
+  justify-content: space-between;
+  margin-bottom: 0.3rem;
+}
+
+.nswmesh-region-map__legend-toggle {
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--ifm-toc-border-color);
+  border-radius: 50%;
+  color: var(--ifm-font-color-base);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: var(--ifm-font-family-base);
+  font-size: 0.7rem;
+  font-weight: 700;
+  height: 1.2rem;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  transition: color 0.15s ease-out, border-color 0.15s ease-out;
+  width: 1.2rem;
+}
+
+.nswmesh-region-map__legend-toggle:hover {
+  border-color: var(--nswmesh-accent);
+  color: var(--nswmesh-accent);
+}
+
+@keyframes nswmesh-legend-toggle-pop {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  40% {
+    transform: scale(1.3) rotate(-10deg);
+  }
+  70% {
+    transform: scale(0.9) rotate(6deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.nswmesh-region-map__legend-toggle--pop {
+  animation: nswmesh-legend-toggle-pop 0.4s ease-out;
+}
+
+.nswmesh-region-map__legend-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.2rem 0;
+}
+
+.nswmesh-region-map__legend-item-label {
+  align-items: center;
+  display: flex;
+  gap: 0.4rem;
+}
+
+/* Grid-rows trick for an animatable height, since height/max-height transitions can't
+   target "auto" - given a bit of bounce (rather than a plain fade) via the easing curve.
+   Width is animated too (0 to 220px) so the legend box itself starts narrow and only
+   grows once expanded, instead of always reserving the full expanded width up front. */
+.nswmesh-region-map__legend-description-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  min-width: 0;
+  overflow: hidden;
+  transition: grid-template-rows 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.25s ease-out;
+  width: 0;
+}
+
+.nswmesh-region-map__legend-description-wrap--expanded {
+  grid-template-rows: 1fr;
+  width: 220px;
+}
+
+.nswmesh-region-map__legend-description-inner {
+  overflow: hidden;
+  width: 220px;
+}
+
+.nswmesh-region-map__legend-description {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.78rem;
+  margin: 0.1rem 0 0 1.25rem;
+}
+
+.nswmesh-region-map__legend-swatch {
+  border-radius: 3px;
+  display: inline-block;
+  height: 0.85rem;
+  width: 0.85rem;
+}
+
+.nswmesh-region-map__legend-swatch--active {
+  background: rgba(244, 63, 94, 0.15);
+  border: 2px solid var(--nswmesh-accent);
+}
+
+.nswmesh-region-map__legend-swatch--tentative {
+  background: rgba(244, 63, 94, 0.1);
+  border: 2px dashed var(--nswmesh-accent);
+}
+
+.nswmesh-region-map__legend-swatch--future {
+  background: rgba(107, 114, 128, 0.1);
+  border: 2px dashed var(--nswmesh-grey);
+}
+
+/* Region map: popup, with a gradient accent bar and vertical status label */
+
+.nswmesh-region-popup {
+  padding-left: 0.7rem;
+  position: relative;
+}
+
+.nswmesh-region-popup::before {
+  background: linear-gradient(to bottom, #ff6a00, #e11d48);
+  bottom: 0;
+  content: '';
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 4px;
+}
+
+.nswmesh-region-popup--tentative::before {
+  mask-image: repeating-linear-gradient(to bottom, #000 0 5px, transparent 6px 12px);
+  -webkit-mask-image: repeating-linear-gradient(to bottom, #000 0 5px, transparent 6px 12px);
+}
+
+.nswmesh-region-popup--future::before {
+  background: linear-gradient(to bottom, #8f867e, #8a7278);
+  mask-image: repeating-linear-gradient(to bottom, #000 0 5px, transparent 6px 12px);
+  -webkit-mask-image: repeating-linear-gradient(to bottom, #000 0 5px, transparent 6px 12px);
+}
+
+.nswmesh-region-popup__status-label {
+  -webkit-font-smoothing: antialiased;
+  align-items: center;
+  bottom: 0;
+  display: flex;
+  font-family: var(--ifm-heading-font-family);
+  font-size: 0.7rem;
+  font-weight: 700;
+  justify-content: center;
+  left: -1.15rem;
+  letter-spacing: 0.06em;
+  padding-top: 1px;
+  position: absolute;
+  text-transform: uppercase;
+  top: 0;
+  transform: rotate(180deg);
+  width: 0.85rem;
+  writing-mode: vertical-rl;
+}
+
+.nswmesh-region-popup--active .nswmesh-region-popup__status-label,
+.nswmesh-region-popup--tentative .nswmesh-region-popup__status-label {
+  background: linear-gradient(to bottom, #e11d48, #ff6a00);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nswmesh-region-popup--future .nswmesh-region-popup__status-label {
+  background: linear-gradient(to bottom, #8a7278, #8f867e);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nswmesh-region-popup__iata {
+  font-family: var(--ifm-heading-font-family);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.nswmesh-region-popup--active .nswmesh-region-popup__iata,
+.nswmesh-region-popup--tentative .nswmesh-region-popup__iata {
+  background: linear-gradient(90deg, #ff6a00, #e11d48);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nswmesh-region-popup--future .nswmesh-region-popup__iata {
+  background: linear-gradient(90deg, #8f867e, #8a7278);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nswmesh-region-popup__region {
+  color: var(--ifm-font-color-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.nswmesh-region-popup__section {
+  margin-top: 0.5rem;
+}
+
+.nswmesh-region-popup ul {
+  line-height: 1.15;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nswmesh-region-popup li {
+  padding: 0;
+}
+
+/* Region map: re-theme Leaflet's own chrome (popup, zoom control, attribution) to
+   match the site instead of Leaflet's hardcoded white/black defaults */
+
+.leaflet-container {
+  font-family: var(--ifm-font-family-base);
+}
+
+.nswmesh-region-map__legend,
+.nswmesh-region-map__zoom-hint,
+.nswmesh-region-map__base-layer,
+.nswmesh-region-map__easter-egg,
+.leaflet-container .leaflet-popup-content-wrapper,
+.leaflet-container .leaflet-control-zoom {
+  --nswmesh-map-border: rgba(15, 23, 42, 0.25);
+}
+
+[data-theme='dark'] .nswmesh-region-map__legend,
+[data-theme='dark'] .nswmesh-region-map__zoom-hint,
+[data-theme='dark'] .nswmesh-region-map__base-layer,
+[data-theme='dark'] .nswmesh-region-map__easter-egg,
+[data-theme='dark'] .leaflet-container .leaflet-popup-content-wrapper,
+[data-theme='dark'] .leaflet-container .leaflet-control-zoom {
+  --nswmesh-map-border: rgba(248, 250, 252, 0.4);
+}
+
+.leaflet-container .leaflet-popup-content-wrapper {
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--nswmesh-map-border);
+  border-radius: 8px;
+  box-shadow: none;
+  color: var(--ifm-font-color-base);
+}
+
+.leaflet-container .leaflet-popup-tip {
+  background: var(--ifm-background-surface-color);
+  box-shadow: none;
+  color: var(--ifm-font-color-base);
+}
+
+.leaflet-container a.leaflet-popup-close-button.leaflet-popup-close-button {
+  color: var(--ifm-font-color-secondary);
+  font-family: var(--ifm-font-family-base);
+  transition: color 0.15s ease-out;
+}
+
+.leaflet-container a.leaflet-popup-close-button.leaflet-popup-close-button:hover,
+.leaflet-container a.leaflet-popup-close-button.leaflet-popup-close-button:focus {
+  color: var(--nswmesh-accent);
+}
+
+.leaflet-container .leaflet-control-zoom {
+  border: 1px solid var(--nswmesh-map-border);
+  border-radius: 8px;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.leaflet-container .leaflet-control-zoom a {
+  background: var(--ifm-background-surface-color);
+  color: var(--ifm-font-color-base);
+  font-family: var(--ifm-font-family-base);
+}
+
+.leaflet-container .leaflet-control-zoom a:hover {
+  background: var(--ifm-table-stripe-background);
+}
+
+/* Region map: dismissible ctrl+scroll-to-zoom hint, sharing the legend's top offset */
+
+.nswmesh-region-map__zoom-hint {
+  align-items: center;
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--nswmesh-map-border);
+  border-radius: 8px;
+  color: var(--ifm-font-color-base);
+  display: flex;
+  font-family: var(--ifm-font-family-base);
+  font-size: 0.8rem;
+  gap: 0.5rem;
+  left: 3.5rem;
+  padding: 0.4rem 0.6rem;
+  position: absolute;
+  top: 0.75rem;
+  z-index: 1000;
+}
+
+.nswmesh-region-map__zoom-hint-close {
+  align-items: center;
+  background: transparent;
+  border: none;
+  color: var(--ifm-font-color-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  height: 1rem;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.15s ease-out;
+  width: 1rem;
+}
+
+.nswmesh-region-map__zoom-hint-close:hover {
+  color: var(--nswmesh-accent);
+}
+
+.nswmesh-region-map__zoom-hint-close svg {
+  fill: currentColor;
+  height: 0.7rem;
+  width: 0.7rem;
+}
+
+/* Region map: base layer switcher (satellite / map / auto), sitting above the attribution strip */
+
+.nswmesh-region-map__base-layer {
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--nswmesh-map-border);
+  border-radius: 8px;
+  bottom: 2.75rem;
+  display: flex;
+  overflow: hidden;
+  position: absolute;
+  right: 0.75rem;
+  z-index: 1000;
+}
+
+.nswmesh-region-map__base-layer-button {
+  align-items: center;
+  background: transparent;
+  border: none;
+  color: var(--ifm-font-color-secondary);
+  cursor: pointer;
+  display: flex;
+  height: 2rem;
+  justify-content: center;
+  padding: 0;
+  transition: background-color 0.15s ease-out, color 0.15s ease-out;
+  width: 2rem;
+}
+
+.nswmesh-region-map__base-layer-button + .nswmesh-region-map__base-layer-button {
+  border-left: 1px solid var(--nswmesh-map-border);
+}
+
+.nswmesh-region-map__base-layer-button:hover {
+  background: var(--ifm-table-stripe-background);
+  color: var(--ifm-font-color-base);
+}
+
+.nswmesh-region-map__base-layer-button[aria-pressed='true'] {
+  background: var(--nswmesh-accent);
+  color: #fff;
+}
+
+.nswmesh-region-map__base-layer-button svg {
+  height: 1.1rem;
+  width: 1.1rem;
+}
+
+.leaflet-bottom.leaflet-right .leaflet-control-attribution {
+  background: transparent;
+  border: none;
+  color: var(--ifm-font-color-secondary);
+  font-size: 0.75rem;
+  margin: 0 0.75rem 0.75rem 0;
+}
+
+.leaflet-container .leaflet-control-attribution a {
+  color: var(--ifm-font-color-secondary);
+}
+
+/* Same reasoning as the labels above: force legible light-mode styling over busy imagery */
+.nswmesh-region-map--busy-basemap .leaflet-control-attribution,
+.nswmesh-region-map--busy-basemap .leaflet-control-attribution a {
+  color: #fff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+}
