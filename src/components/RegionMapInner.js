@@ -1,21 +1,63 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {MapContainer, TileLayer, GeoJSON, useMap} from 'react-leaflet';
 import {useColorMode} from '@docusaurus/theme-common';
 import 'leaflet/dist/leaflet.css';
 
 const ACTIVE_COLOUR = '#f43f5e';
 const FUTURE_COLOUR = '#6b7280';
-// References to the gradient defs in the hidden SVG rendered below, used as the hover colour
+
+// Touch devices fire mouseover on tap, so this stops taps triggering hover styling too
+const supportsHover =
+  typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia('(hover: hover)').matches
+    : true;
+
+// Gradient defs are in the hidden SVG below
 const HOVER_GRADIENT = 'url(#nswmesh-hover-gradient)';
 const FUTURE_HOVER_GRADIENT = 'url(#nswmesh-hover-gradient-future)';
 
-// Arbitrary bounds for NSW, to prevent panning too far away from the map.
+// IATA -> layer, so ?region= links can find and select the right one (see the deep-link effect below)
+const regionLayersByIata = new Map();
+
+// Popup content is raw HTML, so these buttons are plain SVG markup rather than JSX
+const COPY_ICON_SVG =
+  '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v12h2V3h12V1Zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2Zm0 16H8V7h11v14Z" /></svg>';
+const LINK_ICON_SVG =
+  '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" /></svg>';
+const CHECK_ICON_SVG =
+  '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20.3 6.7 9 18l-5.3-5.3 1.4-1.4L9 15.2 18.9 5.3l1.4 1.4Z" /></svg>';
+
+function buildCliCommands(scopes) {
+  const lines = scopes.flatMap((scope) => [`region put ${scope}`, `region allowf ${scope}`]);
+  lines.push('region save');
+  return lines.join('\n');
+}
+
+// Briefly swaps a button's icon to a checkmark after a successful copy
+function flashCopied(button, defaultIconSvg, defaultTitle) {
+  button.innerHTML = CHECK_ICON_SVG;
+  button.title = 'Copied!';
+
+  window.setTimeout(() => {
+    button.innerHTML = defaultIconSvg;
+    button.title = defaultTitle;
+  }, 1500);
+}
+
+// navigator.clipboard is undefined outside a secure context (e.g. testing over LAN http on
+// a phone), which would otherwise throw
+function copyToClipboard(text, onSuccess) {
+  if (!navigator.clipboard || !navigator.clipboard.writeText) return;
+  navigator.clipboard.writeText(text).then(onSuccess).catch(() => {});
+}
+
+// Rough NSW bounds, so panning can't wander off too far
 const NSW_MAX_BOUNDS = [
   [-41, 136],
   [-25, 158]
 ];
 
-// Carto basemap tiles for light and dark, used by the "auto" base layer to follow the site's theme
+// Carto tiles for the "auto" base layer, which follows the site's light/dark theme
 const AUTO_TILE_LAYERS = {
   light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
   dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
@@ -27,17 +69,7 @@ const AUTO_ATTRIBUTION =
 const MAP_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const MAP_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
-const SATELLITE_TILE_URL =
-  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-const SATELLITE_ATTRIBUTION = 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics';
-
-// Work out which tile URL/attribution to use for the selected base layer. "auto" is the
-// only one that depends on the site's colour mode, since satellite/map imagery doesn't have a dark variant
 function getTileConfig(baseLayer, colorMode) {
-  if (baseLayer === 'satellite') {
-    return {url: SATELLITE_TILE_URL, attribution: SATELLITE_ATTRIBUTION};
-  }
-
   if (baseLayer === 'map') {
     return {url: MAP_TILE_URL, attribution: MAP_ATTRIBUTION};
   }
@@ -45,23 +77,27 @@ function getTileConfig(baseLayer, colorMode) {
   return {url: AUTO_TILE_LAYERS[colorMode], attribution: AUTO_ATTRIBUTION};
 }
 
-// Get the status of a region
 function getStatus(feature) {
   const status = feature?.properties?.Status || feature?.properties?.status;
   const normalized = typeof status === 'string' ? status.toLowerCase() : '';
   return normalized === 'tentative' || normalized === 'future' ? normalized : 'active';
 }
 
-const STATUS_STACK_ORDER = {future: 0, tentative: 1, active: 2};
+// Leaflet stacks SVG paths in DOM order, so Future renders first (bottom) and Active last
+// (top), keeping shared borders tidy. Grouped by status across all loaded features, not by
+// file, so this works whether regions come from one file or many.
+const STATUS_ORDER = ['future', 'tentative', 'active'];
 
-// Leaflet stacks SVG paths in DOM order, so rendering Future first (bottom) and Active
-// last (top) keeps shared borders tidy where regions of different status overlap
-function getLayerStackOrder(data) {
-  const status = getStatus(data?.features?.[0] || {});
-  return STATUS_STACK_ORDER[status] ?? STATUS_STACK_ORDER.active;
+function partitionFeaturesByStatus(layers) {
+  const buckets = {future: [], tentative: [], active: []};
+
+  layers.forEach(({data}) => {
+    (data.features || []).forEach((feature) => buckets[getStatus(feature)].push(feature));
+  });
+
+  return buckets;
 }
 
-// Set the style for a region based on its status
 function regionStyle(feature) {
   const status = getStatus(feature);
 
@@ -72,7 +108,7 @@ function regionStyle(feature) {
       fillColor: FUTURE_COLOUR,
       fillOpacity: 0.08,
       dashArray: '6, 6',
-      smoothFactor: 0
+      smoothFactor: 1.3
     };
   }
 
@@ -83,7 +119,7 @@ function regionStyle(feature) {
       fillColor: ACTIVE_COLOUR,
       fillOpacity: 0.08,
       dashArray: '6, 6',
-      smoothFactor: 0
+      smoothFactor: 1.3
     };
   }
 
@@ -92,11 +128,10 @@ function regionStyle(feature) {
     weight: 2,
     fillColor: ACTIVE_COLOUR,
     fillOpacity: 0.1,
-    smoothFactor: 0
+    smoothFactor: 1.3
   };
 }
 
-// Escape region data before it's inserted as raw HTML in labels and popups
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, (char) => (
     {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]
@@ -111,21 +146,50 @@ function capitalize(value) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-// Leaflet's Tooltip options don't support a style prop, so the hover colour has to be
-// applied directly to the DOM element rather than passed in when binding the tooltip
+// "Wollongong / Illawarra" -> ["Wollongong", "Illawarra"]
+function splitRegionName(region) {
+  return region.split('/').map((part) => part.trim()).filter(Boolean);
+}
+
+// Each part gets its own line, with the second (and any further) marked as secondary
+function buildNameLinesHtml(parts, baseClass) {
+  return parts
+    .map((part, index) => `<span class="${baseClass}${index > 0 ? ` ${baseClass}--secondary` : ''}">${escapeHtml(part)}</span>`)
+    .join('');
+}
+
+const activeHoverLayers = new Set();
+
+const HOVER_FADE_MIN_ZOOM = 8;
+const HOVER_FADE_MAX_ZOOM = 16;
+const HOVER_FADE_MAX_OPACITY = 0.35;
+const HOVER_FADE_MIN_OPACITY = 0.05;
+
+// Fades the hover fill out at high zoom, so it doesn't hide the map on a small border area
+function getHoverFillOpacity(zoom) {
+  const t = Math.min(Math.max((zoom - HOVER_FADE_MIN_ZOOM) / (HOVER_FADE_MAX_ZOOM - HOVER_FADE_MIN_ZOOM), 0), 1);
+  return HOVER_FADE_MAX_OPACITY - t * (HOVER_FADE_MAX_OPACITY - HOVER_FADE_MIN_OPACITY);
+}
+
 function applyHoverStyle(layer, feature) {
   const isFuture = getStatus(feature) === 'future';
   const gradient = isFuture ? FUTURE_HOVER_GRADIENT : HOVER_GRADIENT;
+  const zoom = layer._map ? layer._map.getZoom() : HOVER_FADE_MIN_ZOOM;
+
+  // Forcing a reflow between bringToFront() and setStyle() makes sure the stroke-width
+  // transition actually plays, even hovering straight from one region onto its neighbour
+  layer.bringToFront();
+  const pathEl = layer.getElement && layer.getElement();
+  if (pathEl) void pathEl.getBoundingClientRect();
 
   layer.setStyle({
     color: gradient,
     fillColor: gradient,
     weight: 4,
-    fillOpacity: 0.35
+    fillOpacity: getHoverFillOpacity(zoom)
   });
-  layer.bringToFront();
+  activeHoverLayers.add(layer);
 
-  const pathEl = layer.getElement && layer.getElement();
   if (pathEl) {
     pathEl.classList.add(isFuture ? 'nswmesh-region-hover--future' : 'nswmesh-region-hover');
   }
@@ -137,9 +201,9 @@ function applyHoverStyle(layer, feature) {
   }
 }
 
-// Revert a region to its default style, used on mouseout and when its popup closes
 function clearHoverStyle(layer, feature) {
   layer.setStyle(regionStyle(feature));
+  activeHoverLayers.delete(layer);
 
   const pathEl = layer.getElement && layer.getElement();
   if (pathEl) pathEl.classList.remove('nswmesh-region-hover', 'nswmesh-region-hover--future');
@@ -158,8 +222,11 @@ function onEachFeature(feature, layer) {
   const region = props.Region || props.region || props.name || props.label || '';
   const status = getStatus(feature);
   const statusModifier = `nswmesh-region-popup--${status}`;
+  const regionParts = splitRegionName(region);
 
   if (iata) {
+    regionLayersByIata.set(iata.toUpperCase(), layer);
+
     const labelClassName =
       status === 'future' ? 'nswmesh-region-label nswmesh-region-label--future' : 'nswmesh-region-label';
     layer.bindTooltip(`<span class="nswmesh-region-label__text">${escapeHtml(iata)}</span>`, {
@@ -169,48 +236,81 @@ function onEachFeature(feature, layer) {
     });
   }
 
-  // Scopes come straight from the geojson where available, falling back to a guess from the IATA code
+  // Never invent data the source doesn't have - say so plainly rather than guessing
   const scopesRaw = props.Scopes || props.scopes;
-  const scopes = scopesRaw
+  const hasScopes = Boolean(scopesRaw);
+  const scopes = hasScopes
     ? String(scopesRaw).split(',').map((scope) => scope.trim()).filter(Boolean)
-    : (iata ? ['au', 'au-nsw', `au-nsw-${iata.toLowerCase()}`] : ['au', 'au-nsw']);
+    : ['Unknown'];
 
   const channelsRaw = props.Channels || props.channels;
   const channels = channelsRaw
     ? String(channelsRaw).split(',').map((channel) => channel.trim()).filter(Boolean)
-    : ['None'];
+    : ['Unknown'];
+
+  const cliCommands = hasScopes ? buildCliCommands(scopes) : '';
+  const regionHtml = buildNameLinesHtml(regionParts, 'nswmesh-region-popup__region-line');
 
   const popupHtml = `
     <div class="nswmesh-region-popup ${statusModifier}">
       <span class="nswmesh-region-popup__status-label">${escapeHtml(capitalize(status))}</span>
-      ${iata ? `<div class="nswmesh-region-popup__iata">${escapeHtml(iata)}</div>` : ''}
-      ${region ? `<div class="nswmesh-region-popup__region">${escapeHtml(region)}</div>` : ''}
+      ${iata ? `
+        <div class="nswmesh-region-popup__iata-row">
+          <div class="nswmesh-region-popup__iata">${escapeHtml(iata)}</div>
+          <button type="button" class="nswmesh-region-popup__action nswmesh-region-popup__action--share" title="Copy link to this region" aria-label="Copy link to ${escapeHtml(iata)}">${LINK_ICON_SVG}</button>
+        </div>
+      ` : ''}
+      ${region ? `<div class="nswmesh-region-popup__region">${regionHtml}</div>` : ''}
       <div class="nswmesh-region-popup__section">
-        <strong>Local Scopes:</strong>
+        <strong class="nswmesh-region-popup__section-heading">
+          Scopes
+          ${hasScopes ? `<button type="button" class="nswmesh-region-popup__action nswmesh-region-popup__action--copy" title="Copy CLI commands" aria-label="Copy CLI commands for ${escapeHtml(iata || region)}">${COPY_ICON_SVG}</button>` : ''}
+        </strong>
         <ul>${listItems(scopes)}</ul>
       </div>
       <div class="nswmesh-region-popup__section">
-        <strong>Local Channels:</strong>
+        <strong>Channels</strong>
         <ul>${listItems(channels)}</ul>
       </div>
     </div>
   `;
-  layer.bindPopup(popupHtml);
+  layer.bindPopup(popupHtml, {closeButton: false});
 
-  layer.on('mouseover', () => applyHoverStyle(layer, feature));
+  if (supportsHover) {
+    layer.on('mouseover', () => applyHoverStyle(layer, feature));
+    layer.on('mouseout', () => {
+      if (!layer.isPopupOpen()) clearHoverStyle(layer, feature);
+    });
+  }
 
-  // Don't clear the hover style on mouseout if the popup is still open, so a clicked
-  // region stays highlighted until its popup is closed, regardless of the cursor
-  layer.on('mouseout', () => {
-    if (!layer.isPopupOpen()) clearHoverStyle(layer, feature);
+  layer.on('popupopen', () => {
+    applyHoverStyle(layer, feature);
+
+    const popupEl = layer.getPopup().getElement();
+    if (!popupEl) return;
+
+    const copyButton = popupEl.querySelector('.nswmesh-region-popup__action--copy');
+    if (copyButton) {
+      copyButton.onclick = (event) => {
+        event.stopPropagation();
+        copyToClipboard(cliCommands, () => flashCopied(copyButton, COPY_ICON_SVG, 'Copy CLI commands'));
+      };
+    }
+
+    const shareButton = popupEl.querySelector('.nswmesh-region-popup__action--share');
+    if (shareButton) {
+      shareButton.onclick = (event) => {
+        event.stopPropagation();
+        const shareUrl = `${window.location.origin}${window.location.pathname}?region=${encodeURIComponent(iata)}`;
+        copyToClipboard(shareUrl, () => flashCopied(shareButton, LINK_ICON_SVG, 'Copy link to this region'));
+      };
+    }
   });
 
-  layer.on('popupopen', () => applyHoverStyle(layer, feature));
   layer.on('popupclose', () => clearHoverStyle(layer, feature));
 }
 
-// Rendered as a child of MapContainer so useMap() only resolves once the Leaflet map
-// instance actually exists, instead of racing a ref that populates asynchronously
+// Child of MapContainer so useMap() resolves immediately, rather than racing a ref
 function CtrlScrollZoom() {
   const map = useMap();
 
@@ -219,7 +319,7 @@ function CtrlScrollZoom() {
 
     function handleWheel(event) {
       if (event.ctrlKey || event.metaKey) {
-        // Block the browser's own page zoom and hand the gesture to Leaflet instead
+        // Block the browser's own page zoom and hand it to Leaflet instead
         event.preventDefault();
         if (!map.scrollWheelZoom.enabled()) map.scrollWheelZoom.enable();
       } else if (map.scrollWheelZoom.enabled()) {
@@ -234,25 +334,28 @@ function CtrlScrollZoom() {
   return null;
 }
 
-// Segmented control for picking the base layer: satellite imagery, plain OSM street
-// map, or "auto", which follows the site's light/dark theme (the half-filled icon)
+// Keeps the hover fade in sync with zoom
+function HoverZoomFade() {
+  const map = useMap();
+
+  useEffect(() => {
+    function handleZoom() {
+      const opacity = getHoverFillOpacity(map.getZoom());
+      activeHoverLayers.forEach((layer) => layer.setStyle({fillOpacity: opacity}));
+    }
+
+    map.on('zoom', handleZoom);
+    return () => map.off('zoom', handleZoom);
+  }, [map]);
+
+  return null;
+}
+
+
+// Base layer switcher buttons
 function BaseLayerSwitcher({baseLayer, onChange}) {
   return (
     <div className="nswmesh-region-map__base-layer" role="group" aria-label="Base map style">
-      <button
-        aria-label="Satellite view"
-        aria-pressed={baseLayer === 'satellite'}
-        className="nswmesh-region-map__base-layer-button"
-        onClick={() => onChange('satellite')}
-        title="Satellite"
-        type="button">
-        <svg aria-hidden="true" viewBox="0 0 24 24">
-          <path
-            fill="currentColor"
-            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"
-          />
-        </svg>
-      </button>
       <button
         aria-label="Map view"
         aria-pressed={baseLayer === 'map'}
@@ -285,7 +388,7 @@ function BaseLayerSwitcher({baseLayer, onChange}) {
   );
 }
 
-// Very important function!
+// Very important function
 function LogoEasterEgg({state}) {
   if (state === 0) return null;
 
@@ -302,45 +405,7 @@ function LogoEasterEgg({state}) {
   );
 }
 
-// Dismissible hint explaining the ctrl+scroll gesture above, since scroll-to-zoom
-// is off by default (a plain page scroll shouldn't get hijacked by the map)
-function ZoomHint() {
-  const [dismissed, setDismissed] = useState(false);
-
-  if (dismissed) return null;
-
-  return (
-    <div className="nswmesh-region-map__zoom-hint">
-      <span>Ctrl + scroll to zoom</span>
-      <button
-        aria-label="Dismiss hint"
-        className="nswmesh-region-map__zoom-hint-close"
-        onClick={() => setDismissed(true)}
-        type="button">
-        <svg aria-hidden="true" viewBox="0 0 24 24">
-          <path d="M6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4 17.6 5 12 10.6Z" />
-        </svg>
-      </button>
-    </div>
-  );
-}
-
-// Legend with swatches for each status, and an expandable panel explaining what they mean
-function LegendDescription({expanded, children}) {
-  return (
-    <div
-      className={
-        expanded
-          ? 'nswmesh-region-map__legend-description-wrap nswmesh-region-map__legend-description-wrap--expanded'
-          : 'nswmesh-region-map__legend-description-wrap'
-      }>
-      <div className="nswmesh-region-map__legend-description-inner">
-        <p className="nswmesh-region-map__legend-description">{children}</p>
-      </div>
-    </div>
-  );
-}
-
+// Collapsible legend
 function RegionMapLegend() {
   const [expanded, setExpanded] = useState(false);
   // Toggled true on click and cleared once the pop animation finishes, so it can replay every click
@@ -353,50 +418,63 @@ function RegionMapLegend() {
 
   return (
     <div className="nswmesh-region-map__legend">
-      <div className="nswmesh-region-map__legend-header">
+      <button
+        aria-expanded={expanded}
+        aria-label={expanded ? 'Hide legend' : 'Show legend'}
+        className="nswmesh-region-map__legend-header"
+        onClick={handleToggle}
+        type="button">
         <span>Legend</span>
-        <button
-          aria-expanded={expanded}
-          aria-label={expanded ? 'Hide legend details' : 'Show legend details'}
+        <span
           className={
-            pop
-              ? 'nswmesh-region-map__legend-toggle nswmesh-region-map__legend-toggle--pop'
-              : 'nswmesh-region-map__legend-toggle'
+            pop ? 'nswmesh-region-map__legend-chevron-pop nswmesh-region-map__legend-chevron-pop--active' : 'nswmesh-region-map__legend-chevron-pop'
           }
-          onAnimationEnd={() => setPop(false)}
-          onClick={handleToggle}
-          type="button">
-          ?
-        </button>
-      </div>
-      <div className="nswmesh-region-map__legend-item">
-        <div className="nswmesh-region-map__legend-item-label">
-          <span className="nswmesh-region-map__legend-swatch nswmesh-region-map__legend-swatch--active" />
-          Active
+          onAnimationEnd={() => setPop(false)}>
+          <svg
+            aria-hidden="true"
+            className={
+              expanded
+                ? 'nswmesh-region-map__legend-chevron nswmesh-region-map__legend-chevron--expanded'
+                : 'nswmesh-region-map__legend-chevron'
+            }
+            viewBox="0 0 24 24">
+            <path fill="currentColor" d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z" />
+          </svg>
+        </span>
+      </button>
+      <div
+        className={
+          expanded
+            ? 'nswmesh-region-map__legend-items-wrap nswmesh-region-map__legend-items-wrap--expanded'
+            : 'nswmesh-region-map__legend-items-wrap'
+        }>
+        <div className="nswmesh-region-map__legend-items-inner">
+          <div className="nswmesh-region-map__legend-items">
+            <div className="nswmesh-region-map__legend-item">
+              <div className="nswmesh-region-map__legend-item-label">
+                <span className="nswmesh-region-map__legend-swatch nswmesh-region-map__legend-swatch--active" />
+                Active
+              </div>
+              <p className="nswmesh-region-map__legend-description">Established, with channels and scopes in use.</p>
+            </div>
+            <div className="nswmesh-region-map__legend-item">
+              <div className="nswmesh-region-map__legend-item-label">
+                <span className="nswmesh-region-map__legend-swatch nswmesh-region-map__legend-swatch--tentative" />
+                Tentative
+              </div>
+              <p className="nswmesh-region-map__legend-description">
+                Mesh activity, but details and borders aren&apos;t confirmed.
+              </p>
+            </div>
+            <div className="nswmesh-region-map__legend-item">
+              <div className="nswmesh-region-map__legend-item-label">
+                <span className="nswmesh-region-map__legend-swatch nswmesh-region-map__legend-swatch--future" />
+                Future
+              </div>
+              <p className="nswmesh-region-map__legend-description">An early guess, entirely subject to change.</p>
+            </div>
+          </div>
         </div>
-        <LegendDescription expanded={expanded}>
-          The region has active users, and its scopes and channels are in active use.
-        </LegendDescription>
-      </div>
-      <div className="nswmesh-region-map__legend-item">
-        <div className="nswmesh-region-map__legend-item-label">
-          <span className="nswmesh-region-map__legend-swatch nswmesh-region-map__legend-swatch--tentative" />
-          Tentative
-        </div>
-        <LegendDescription expanded={expanded}>
-          The region has users and traffic, but its borders, scopes, and channels haven&apos;t been fully settled, so
-          scopes may or may not be in active use.
-        </LegendDescription>
-      </div>
-      <div className="nswmesh-region-map__legend-item">
-        <div className="nswmesh-region-map__legend-item-label">
-          <span className="nswmesh-region-map__legend-swatch nswmesh-region-map__legend-swatch--future" />
-          Future
-        </div>
-        <LegendDescription expanded={expanded}>
-          An early idea of what a region might use or look like. If you&apos;re within or near its tentative
-          borders, join the Discord to take part in discussing the region and help shape it.
-        </LegendDescription>
       </div>
     </div>
   );
@@ -406,17 +484,17 @@ export default function RegionMapInner({geojsonUrls, center, zoom, height, logoU
   const {colorMode} = useColorMode();
   const [layers, setLayers] = useState([]);
   const [failedUrls, setFailedUrls] = useState([]);
+  const [regionsLoading, setRegionsLoading] = useState(true);
   const [baseLayer, setBaseLayer] = useState('auto');
   const [eggState, setEggState] = useState(0);
   const tileConfig = getTileConfig(baseLayer, colorMode);
+  const wrapperRef = useRef(null);
+  const deepLinkHandledRef = useRef(false);
 
-  // Satellite/OSM imagery doesn't have a dark variant, so always use the light logo and
-  // label styling on those, regardless of the site's theme; only "auto" follows colorMode
   const isBusyBasemap = baseLayer !== 'auto';
   const logoUrl = isBusyBasemap || colorMode !== 'dark' ? logoUrlLight : logoUrlDark;
 
-  // Fetch every region file in parallel and keep track of any that fail, rather than
-  // letting one bad file stop the rest of the regions from loading
+  // Unlikely error catch where one bad file shouldn't stop the rest of the regions loading
   useEffect(() => {
     let cancelled = false;
 
@@ -434,6 +512,7 @@ export default function RegionMapInner({geojsonUrls, center, zoom, height, logoU
       if (cancelled) return;
       setLayers(results.filter((result) => result.data));
       setFailedUrls(results.filter((result) => !result.data).map((result) => result.url));
+      setRegionsLoading(false);
     });
 
     return () => {
@@ -441,8 +520,28 @@ export default function RegionMapInner({geojsonUrls, center, zoom, height, logoU
     };
   }, [geojsonUrls]);
 
+  // A ?region=CODE link scrolls to the map, pans/zooms to that region, and opens its popup
+  useEffect(() => {
+    if (deepLinkHandledRef.current) return;
+
+    const targetIata = new URLSearchParams(window.location.search).get('region');
+    if (!targetIata) return;
+
+    const layer = regionLayersByIata.get(targetIata.toUpperCase());
+    if (!layer || !layer._map) return;
+
+    deepLinkHandledRef.current = true;
+
+    if (wrapperRef.current) wrapperRef.current.scrollIntoView({behavior: 'smooth', block: 'center'});
+    layer._map.fitBounds(layer.getBounds(), {maxZoom: 12});
+    layer.openPopup();
+  }, [layers]);
+
+  const statusBuckets = partitionFeaturesByStatus(layers);
+
   return (
     <div
+      ref={wrapperRef}
       className={isBusyBasemap ? 'nswmesh-region-map nswmesh-region-map--busy-basemap' : 'nswmesh-region-map'}
       style={{height, width: '100%', position: 'relative'}}>
       {/* Hidden defs so the hover gradients can be referenced via url(#...) from region styles */}
@@ -467,13 +566,27 @@ export default function RegionMapInner({geojsonUrls, center, zoom, height, logoU
         maxBoundsViscosity={1.0}
         minZoom={6}>
         <TileLayer key={`${baseLayer}-${colorMode}`} attribution={tileConfig.attribution} url={tileConfig.url} />
-        {[...layers]
-          .sort((a, b) => getLayerStackOrder(a.data) - getLayerStackOrder(b.data))
-          .map(({url, data}) => (
-            <GeoJSON key={url} data={data} style={regionStyle} onEachFeature={onEachFeature} />
-          ))}
+        {STATUS_ORDER.map((status) => {
+          const features = statusBuckets[status];
+          if (features.length === 0) return null;
+
+          return (
+            <GeoJSON
+              key={status}
+              data={{type: 'FeatureCollection', features}}
+              style={regionStyle}
+              onEachFeature={onEachFeature}
+            />
+          );
+        })}
         <CtrlScrollZoom />
+        <HoverZoomFade />
       </MapContainer>
+      {regionsLoading && (
+        <div className="nswmesh-region-map__loading" aria-live="polite" aria-label="Loading regions">
+          <span className="nswmesh-region-map__loading-spinner" />
+        </div>
+      )}
       {logoUrl && (
         <div className="nswmesh-region-map__logo">
           <button
@@ -489,7 +602,6 @@ export default function RegionMapInner({geojsonUrls, center, zoom, height, logoU
           <LogoEasterEgg state={eggState} />
         </div>
       )}
-      <ZoomHint />
       <BaseLayerSwitcher baseLayer={baseLayer} onChange={setBaseLayer} />
       <RegionMapLegend />
       {failedUrls.length > 0 && (
