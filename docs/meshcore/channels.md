@@ -89,5 +89,7 @@ For a deeper explanation of MeshCore regions, see Zindello Industries' article [
 | `#centralcoast` | `au-nsw-gos` | Central Coast conversation and coordination. |
 | `#illawarra` | `au-nsw-wol` | Illawarra and Wollongong conversation and coordination. |
 | `#newcastle` | `au-nsw-ntl` | Newcastle and Hunter conversation and coordination. |
+| `#midnorthcoast` | `TBC` | Mid-North Coast conversation and coordination. |
+
 
 Check with the NSW Mesh community before creating a new long-lived regional or operational channel.
