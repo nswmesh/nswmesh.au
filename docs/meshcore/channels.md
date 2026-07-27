@@ -28,7 +28,7 @@ Regions help restrict propagation of local data to the wider mesh where it is le
 You can use the map below for guidance on which regions to include. You can also try the [Eastmesh Region Tool](https://regions.eastmesh.au).
 Please note this map is only intended as a guide and not as a prescriptive resource. If you're close to a border you may choose to include multiple regions depending on geography or repeater links.
 
-<RegionMap geojson="/geo/All-NSW-Regions.geojson" />
+<RegionMap geojson="/geo/All-NSW-Regions-Mini.geojson" />
 
 It is bad practice to scope the Public channel to a region as this can lead to one-sided conversations.
 

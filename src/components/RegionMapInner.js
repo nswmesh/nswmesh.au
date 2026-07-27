@@ -84,17 +84,12 @@ function getStatus(feature) {
 }
 
 // Leaflet stacks SVG paths in DOM order, so Future renders first (bottom) and Active last
-// (top), keeping shared borders tidy. Grouped by status across all loaded features, not by
-// file, so this works whether regions come from one file or many.
+// (top), keeping shared borders tidy.
 const STATUS_ORDER = ['future', 'tentative', 'active'];
 
-function partitionFeaturesByStatus(layers) {
+function partitionFeaturesByStatus(features) {
   const buckets = {future: [], tentative: [], active: []};
-
-  layers.forEach(({data}) => {
-    (data.features || []).forEach((feature) => buckets[getStatus(feature)].push(feature));
-  });
-
+  features.forEach((feature) => buckets[getStatus(feature)].push(feature));
   return buckets;
 }
 
@@ -310,30 +305,6 @@ function onEachFeature(feature, layer) {
   layer.on('popupclose', () => clearHoverStyle(layer, feature));
 }
 
-// Child of MapContainer so useMap() resolves immediately, rather than racing a ref
-function CtrlScrollZoom() {
-  const map = useMap();
-
-  useEffect(() => {
-    const container = map.getContainer();
-
-    function handleWheel(event) {
-      if (event.ctrlKey || event.metaKey) {
-        // Block the browser's own page zoom and hand it to Leaflet instead
-        event.preventDefault();
-        if (!map.scrollWheelZoom.enabled()) map.scrollWheelZoom.enable();
-      } else if (map.scrollWheelZoom.enabled()) {
-        map.scrollWheelZoom.disable();
-      }
-    }
-
-    container.addEventListener('wheel', handleWheel, {passive: false});
-    return () => container.removeEventListener('wheel', handleWheel);
-  }, [map]);
-
-  return null;
-}
-
 // Keeps the hover fade in sync with zoom
 function HoverZoomFade() {
   const map = useMap();
@@ -480,10 +451,10 @@ function RegionMapLegend() {
   );
 }
 
-export default function RegionMapInner({geojsonUrls, center, zoom, height, logoUrlLight, logoUrlDark}) {
+export default function RegionMapInner({geojsonUrl, center, zoom, height, logoUrlLight, logoUrlDark}) {
   const {colorMode} = useColorMode();
-  const [layers, setLayers] = useState([]);
-  const [failedUrls, setFailedUrls] = useState([]);
+  const [features, setFeatures] = useState([]);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [regionsLoading, setRegionsLoading] = useState(true);
   const [baseLayer, setBaseLayer] = useState('auto');
   const [eggState, setEggState] = useState(0);
@@ -494,33 +465,37 @@ export default function RegionMapInner({geojsonUrls, center, zoom, height, logoU
   const isBusyBasemap = baseLayer !== 'auto';
   const logoUrl = isBusyBasemap || colorMode !== 'dark' ? logoUrlLight : logoUrlDark;
 
-  // Unlikely error catch where one bad file shouldn't stop the rest of the regions loading
   useEffect(() => {
     let cancelled = false;
 
-    Promise.all(
-      geojsonUrls.map((url) =>
-        fetch(url)
-          .then((res) => {
-            if (!res.ok) throw new Error(`Failed to load ${url}`);
-            return res.json();
-          })
-          .then((data) => ({url, data}))
-          .catch(() => ({url, data: null}))
-      )
-    ).then((results) => {
-      if (cancelled) return;
-      setLayers(results.filter((result) => result.data));
-      setFailedUrls(results.filter((result) => !result.data).map((result) => result.url));
-      setRegionsLoading(false);
-    });
+    fetch(geojsonUrl)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Failed to load ${geojsonUrl}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (cancelled) return;
+        setFeatures(data.features || []);
+        setRegionsLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLoadFailed(true);
+        setRegionsLoading(false);
+      });
 
     return () => {
       cancelled = true;
     };
-  }, [geojsonUrls]);
+  }, [geojsonUrl]);
 
-  // A ?region=CODE link scrolls to the map, pans/zooms to that region, and opens its popup
+  useEffect(() => {
+    const targetIata = new URLSearchParams(window.location.search).get('region');
+    if (!targetIata) return;
+    if (wrapperRef.current) wrapperRef.current.scrollIntoView({behavior: 'smooth', block: 'center'});
+  }, []);
+
+  // Once that region's layer has loaded, pan/zoom to it and open its popup
   useEffect(() => {
     if (deepLinkHandledRef.current) return;
 
@@ -532,12 +507,11 @@ export default function RegionMapInner({geojsonUrls, center, zoom, height, logoU
 
     deepLinkHandledRef.current = true;
 
-    if (wrapperRef.current) wrapperRef.current.scrollIntoView({behavior: 'smooth', block: 'center'});
     layer._map.fitBounds(layer.getBounds(), {maxZoom: 12});
     layer.openPopup();
-  }, [layers]);
+  }, [features]);
 
-  const statusBuckets = partitionFeaturesByStatus(layers);
+  const statusBuckets = partitionFeaturesByStatus(features);
 
   return (
     <div
@@ -561,7 +535,7 @@ export default function RegionMapInner({geojsonUrls, center, zoom, height, logoU
         center={center}
         zoom={zoom}
         style={{height: '100%', width: '100%'}}
-        scrollWheelZoom={false}
+        scrollWheelZoom={true}
         maxBounds={NSW_MAX_BOUNDS}
         maxBoundsViscosity={1.0}
         minZoom={6}>
@@ -579,7 +553,6 @@ export default function RegionMapInner({geojsonUrls, center, zoom, height, logoU
             />
           );
         })}
-        <CtrlScrollZoom />
         <HoverZoomFade />
       </MapContainer>
       {regionsLoading && (
@@ -604,9 +577,7 @@ export default function RegionMapInner({geojsonUrls, center, zoom, height, logoU
       )}
       <BaseLayerSwitcher baseLayer={baseLayer} onChange={setBaseLayer} />
       <RegionMapLegend />
-      {failedUrls.length > 0 && (
-        <p className="nswmesh-region-map__error">Could not load region data from: {failedUrls.join(', ')}.</p>
-      )}
+      {loadFailed && <p className="nswmesh-region-map__error">Could not load region data.</p>}
     </div>
   );
 }

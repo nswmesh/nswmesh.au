@@ -4,7 +4,7 @@ import {useBaseUrlUtils} from '@docusaurus/useBaseUrl';
 
 export default function RegionMap({geojson, center = [-33.0, 150.8], zoom = 7, height = '500px'}) {
   const {withBaseUrl} = useBaseUrlUtils();
-  const geojsonUrls = (Array.isArray(geojson) ? geojson : [geojson]).map((url) => withBaseUrl(url));
+  const geojsonUrl = withBaseUrl(geojson);
   const logoUrlLight = withBaseUrl('/img/logo-horizontal.svg');
   const logoUrlDark = withBaseUrl('/img/logo-horizontal-dark.svg');
 
@@ -15,7 +15,7 @@ export default function RegionMap({geojson, center = [-33.0, 150.8], zoom = 7, h
         const RegionMapInner = require('./RegionMapInner').default;
         return (
           <RegionMapInner
-            geojsonUrls={geojsonUrls}
+            geojsonUrl={geojsonUrl}
             center={center}
             zoom={zoom}
             height={height}

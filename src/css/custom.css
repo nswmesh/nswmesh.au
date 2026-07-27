@@ -884,6 +884,7 @@ pre {
 
 .nswmesh-region-popup > * {
   animation: nswmesh-region-popup-content-in 0.25s ease-out backwards;
+  will-change: transform, opacity;
 }
 
 .nswmesh-region-popup > *:nth-child(2) {
@@ -966,11 +967,12 @@ pre {
   font-size: 0.7rem;
   font-weight: 700;
   justify-content: center;
-  left: -1.15rem;
+  left: -1.05rem;
   letter-spacing: 0.06em;
   padding-top: 1px;
   position: absolute;
   text-transform: uppercase;
+  will-change: transform, opacity;
   top: 0;
   transform: rotate(180deg);
   width: 0.85rem;
