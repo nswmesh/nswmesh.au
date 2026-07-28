@@ -192,6 +192,53 @@ body,
   width: 1rem;
 }
 
+.nswmesh-callout {
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-toc-border-color);
+  border-radius: 8px;
+  margin: 1rem 0;
+  padding: 0.75rem 1rem 0.75rem 2rem;
+  position: relative;
+}
+
+.nswmesh-callout::before {
+  background: linear-gradient(to bottom, #ff6a00, #e11d48);
+  bottom: 0.5rem;
+  content: '';
+  left: 1.35rem;
+  position: absolute;
+  top: 0.5rem;
+  width: 4px;
+}
+
+.nswmesh-callout::after {
+  -webkit-font-smoothing: antialiased;
+  align-items: center;
+  background: linear-gradient(to bottom, #e11d48, #ff6a00);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  bottom: 0.5rem;
+  content: 'Tip';
+  display: flex;
+  font-family: var(--ifm-heading-font-family);
+  font-size: 0.7rem;
+  font-weight: 700;
+  justify-content: center;
+  left: 0.4rem;
+  letter-spacing: 0.06em;
+  position: absolute;
+  text-transform: uppercase;
+  top: 0.5rem;
+  transform: rotate(180deg);
+  width: 0.85rem;
+  writing-mode: vertical-rl;
+}
+
+.nswmesh-callout p {
+  margin: 0;
+}
+
 .theme-doc-markdown:has(.nswmesh-home-page) > header {
   display: none;
 }
