@@ -85,7 +85,7 @@ Useful channels used mesh-wide.
 
 | Key | Suggested region scope | Purpose |
 | --- | --- | --- |
-| Public | None | General chat for all mesh users. |
+| Public | None (Unscoped) | General chat for all mesh users. |
 | `#test` | `au-nsw` or IATA | Connection testing. Bots may auto-reply to `test`, `ping`, or `path`. |
 | `#emergency` | None | Emergency communications only. |
 | `#alerts` | None | Automatic situation alerts such as fires. |
