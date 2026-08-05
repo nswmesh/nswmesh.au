@@ -21,7 +21,7 @@ const regionLayersByIata = new Map();
 
 // Popup content is raw HTML, so these buttons are plain SVG markup rather than JSX
 const COPY_ICON_SVG =
-  '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v12h2V3h12V1Zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2Zm0 16H8V7h11v14Z" /></svg>';
+  '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M2 4c0-1.1.9-2 2-2h16c1.1 0 2 .9 2 2v16c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V4Zm2 0v16h16V4H4Zm2.7 3.29 4 4a1 1 0 0 1 0 1.42l-4 4-1.4-1.42L8.58 12 5.3 8.71l1.4-1.42ZM12 15h6v2h-6v-2Z" /></svg>';
 const LINK_ICON_SVG =
   '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" /></svg>';
 const CHECK_ICON_SVG =
