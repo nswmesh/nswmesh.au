@@ -19,6 +19,7 @@ const sidebars = {
         },
         'meshcore/repeaters',
         'meshcore/observers',
+        'meshcore/bots',
         'meshcore/maps'
       ]
     },

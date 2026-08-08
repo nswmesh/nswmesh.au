@@ -4,9 +4,9 @@ title: Observers
 
 # MeshCore Observers
 
-Observers are software services that listen to MeshCore traffic and forward messages or raw packets to other resources over the internet. They are commonly used to feed maps, dashboards, analyzers, and other visibility tools through MQTT.
+Observers are software services that listen to MeshCore traffic and forward messages or raw packets to other resources over the internet. They are commonly used to feed maps, dashboards, analysers, and other visibility tools through MQTT.
 
-An observer should be a listen-only service. It should not inject messages into the mesh, bridge internet chat into LoRa, or automate replies back onto the radio network.
+An observer should be a listen-only service. It should ***never*** inject messages into the mesh, bridge internet chat into LoRa, or automate replies back onto the radio network.
 
 ## MQTT Destinations
 
