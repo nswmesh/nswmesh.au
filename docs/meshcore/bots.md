@@ -10,16 +10,72 @@ Bots are great for quick, basic diagnostics while out and about, confirming a pa
 
 ## Bot Directory
 
-TODO: Dig to find all available info on current bots in use
+<details className="nswmesh-region-details">
+<summary><span className="nswmesh-region-details__label">PQQ - Port Macquarie</span><svg className="nswmesh-region-details__chevron" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z" /></svg></summary>
 <div className="nswmesh-bots-table">
 
-| Region | Bot | Channels | Scopes | Commands |
-| --- | --- | --- | --- | --- |
-| WOL | WolBot | `#wolbot` | `au` `au-nsw` `au-nsw-wol` | `multitest` `path` `ping` `stats` `test` `help` |
-| SYD | MMTV - Bot | `#test` | `Unscoped` | `multitest` `path` `ping` `stats` `test` `hello` `joke` `dadjoke` `wx` `help` `trace` |
-| SYD | RoloJnr | `#test` `#rolojnr` | `au` `au-nsw` `au-nsw-wol` | `multitest` `path` `ping` `stats` `test` |
+| Bot | Channels | Scopes | Commands |
+| --- | --- | --- | --- |
+| MNC Bot | `#mncbot` | `Unscoped (7 hops)` | `help` `multitest` `path` `ping` `test` |
 
 </div>
+</details>
+
+<details className="nswmesh-region-details">
+<summary><span className="nswmesh-region-details__label">NTL - Newcastle / Hunter</span><svg className="nswmesh-region-details__chevron" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z" /></svg></summary>
+<div className="nswmesh-bots-table">
+
+| Bot | Channels | Scopes | Commands |
+| --- | --- | --- | --- |
+| Newiebot2300 | `#test` `#newiebot2300` | `Unscoped` | `catfact` `dadjoke` `joke` `multitest` `path` `ping` `test` |
+
+</div>
+</details>
+
+<details className="nswmesh-region-details">
+<summary><span className="nswmesh-region-details__label">SYD - Sydney</span><svg className="nswmesh-region-details__chevron" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z" /></svg></summary>
+<div className="nswmesh-bots-table">
+
+| Bot | Channels | Scopes | Commands |
+| --- | --- | --- | --- |
+| MMTV - Bot | `#test` | `Unscoped` | `dadjoke` `hello` `help` `joke` `multitest` `path` `ping` `stats` `test` `trace` `wx` |
+| RoloJnr | `#test` `#rolojnr` | `au` `au-nsw` `au-nsw-syd` | `multitest` `path` `ping` `stats` `test` |
+
+</div>
+</details>
+
+<details className="nswmesh-region-details">
+<summary><span className="nswmesh-region-details__label">BHS - Bathurst / Central West</span><svg className="nswmesh-region-details__chevron" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z" /></svg></summary>
+<div className="nswmesh-bots-table">
+
+| Bot | Channels | Scopes | Commands |
+| --- | --- | --- | --- |
+| BathurstBot | `#test` `#nunya` `DMs` | `au-nsw` `au-nsw-bhs` | `multitest` `path` `ping` `prefix` `test` |
+
+</div>
+</details>
+
+<details className="nswmesh-region-details">
+<summary><span className="nswmesh-region-details__label">WOL - Wollongong / Illawarra</span><svg className="nswmesh-region-details__chevron" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z" /></svg></summary>
+<div className="nswmesh-bots-table">
+
+| Bot | Channels | Scopes | Commands |
+| --- | --- | --- | --- |
+| WolBot | `#wolbot` `DMs` | `au` `au-nsw` `au-nsw-wol` | `help` `multitest` `path` `ping` `stats` `test` |
+
+</div>
+</details>
+
+<details className="nswmesh-region-details">
+<summary><span className="nswmesh-region-details__label">NOA - Nowra / Shoalhaven</span><svg className="nswmesh-region-details__chevron" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z" /></svg></summary>
+<div className="nswmesh-bots-table">
+
+| Bot | Channels | Scopes | Commands |
+| --- | --- | --- | --- |
+| Nowra Bot | `#test` `DMs` | `Unscoped (7 hops)` | `hello` `help` `multitest` `path` `ping` `test` |
+
+</div>
+</details>
 
 ### Using Bots
 
@@ -48,13 +104,13 @@ A common setup is a small SBC such as a Raspberry Pi, with a companion radio att
 If your bot also behaves as an observer, check the [Observers](./observers) page as well.
 
 ### Best Practices
-Best practices help keep bots lightweight. Followed well, they help ensure bots can exist while without hindering others' use of the network.
+Best practices help keep bots lightweight. Followed well, they help ensure bots can remain useful tools while still ensuring human-to-human communication gets priority on the network.
 
-- A bot, or any other automated script, should avoid sending unprompted automated messages/data, unless there's a genuine "greater good" need to do so (eg. #alerts bot).
+- A bot should avoid sending unprompted automated messages/data, unless there's a "greater good" reason to do so (eg. #alert bot).
 - A bot shouldn't send a message in a conversational channel such as Public or `#sydney`.
-- Bots should be available in their own channel eg. `#wolbot`. Avoid adding them to `#test` if there are already other bots in your region there.
+- A bot should be made available in their own channel eg. `#wolbot`.
 - A bot should mirror its scope to the query it's responding to, OR only reply and scope to the local IATA scope.
-- A bot should ideally never respond to, or send, an unscoped message, regardless of the bot's function.
+- A bot should ideally never respond to, or send, an unscoped message.
 
 Personal and hobby bots can sit on the mesh with fairly insignificant impact, as long as they scope as described above, or are only available via DMs and aren't sending much data. If your testing is likely to be network-heavy or risky, such as when coding a bot from scratch, run it on a separate frequency or preset so it's disconnected from the network but still reachable for your own testing.
 

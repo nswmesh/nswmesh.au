@@ -520,6 +520,215 @@ body,
   text-align: center;
 }
 
+.nswmesh-bots-table table {
+  border: none;
+  border-collapse: collapse;
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.nswmesh-bots-table th,
+.nswmesh-bots-table td {
+  border: none;
+  padding: 0.55rem 0.75rem 0.55rem 0;
+  text-align: left;
+}
+
+.nswmesh-bots-table th:nth-child(1),
+.nswmesh-bots-table td:nth-child(1) {
+  width: 19%;
+}
+
+.nswmesh-bots-table th:nth-child(2),
+.nswmesh-bots-table td:nth-child(2) {
+  width: 22%;
+}
+
+.nswmesh-bots-table th:nth-child(3),
+.nswmesh-bots-table td:nth-child(3) {
+  width: 25%;
+}
+
+.nswmesh-bots-table th:nth-child(4),
+.nswmesh-bots-table td:nth-child(4) {
+  width: 35%;
+}
+
+.nswmesh-bots-table thead,
+.nswmesh-bots-table thead tr {
+  background: transparent;
+  border: none;
+}
+
+.nswmesh-bots-table thead th {
+  border-bottom: 1px solid var(--ifm-table-border-color);
+  color: var(--ifm-font-color-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.nswmesh-bots-table tbody tr {
+  background: transparent;
+  border-bottom: 1px solid var(--ifm-table-border-color);
+}
+
+.nswmesh-bots-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 700px) {
+  .nswmesh-bots-table table,
+  .nswmesh-bots-table thead,
+  .nswmesh-bots-table tbody,
+  .nswmesh-bots-table th,
+  .nswmesh-bots-table td,
+  .nswmesh-bots-table tr {
+    display: block;
+    width: auto !important;
+  }
+
+  .nswmesh-bots-table thead {
+    display: none;
+  }
+
+  .nswmesh-bots-table tr {
+    border-bottom: 1px solid var(--ifm-table-border-color);
+    padding: 0.6rem 0;
+  }
+
+  .nswmesh-bots-table tr:last-child {
+    border-bottom: none;
+  }
+
+  .nswmesh-bots-table td {
+    border: none;
+    padding: 0.2rem 0;
+    text-align: left;
+    white-space: normal;
+  }
+
+  .nswmesh-bots-table td::before {
+    color: var(--ifm-font-color-secondary);
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .nswmesh-bots-table td:nth-child(1)::before { content: "Bot"; }
+  .nswmesh-bots-table td:nth-child(2)::before { content: "Channels"; }
+  .nswmesh-bots-table td:nth-child(3)::before { content: "Scopes"; }
+  .nswmesh-bots-table td:nth-child(4)::before { content: "Commands"; }
+}
+
+.nswmesh-region-details {
+  background: var(--ifm-background-surface-color) !important;
+  border: 1px solid var(--ifm-toc-border-color) !important;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.nswmesh-region-details summary::before {
+  display: none !important;
+}
+
+.nswmesh-region-details > div > div {
+  border-top: none !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.nswmesh-region-details::before {
+  background: var(--nswmesh-accent);
+  bottom: 0.45rem;
+  content: '';
+  left: 0;
+  position: absolute;
+  top: 0.45rem;
+  width: 4px;
+}
+
+.nswmesh-region-details[open]::before {
+  background: linear-gradient(to bottom, #ff6a00, #e11d48);
+}
+
+.nswmesh-region-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+  padding: 0.5rem 1rem 0.5rem 1.5rem;
+  position: relative;
+  user-select: none;
+}
+
+.nswmesh-region-details summary::-webkit-details-marker {
+  content: '';
+  display: none;
+}
+
+.nswmesh-region-details summary::marker {
+  content: '';
+  display: none;
+}
+
+.nswmesh-region-details summary:focus {
+  outline: none;
+}
+
+.nswmesh-region-details summary:focus-visible {
+  outline: 2px solid var(--ifm-table-border-color);
+  outline-offset: -2px;
+}
+
+.nswmesh-region-details__chevron {
+  color: var(--ifm-font-color-secondary);
+  display: block;
+  fill: currentColor;
+  height: 1.4rem;
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: transform 0.2s ease, color 0.2s ease;
+  width: 1.4rem;
+}
+
+.nswmesh-region-details[open] .nswmesh-region-details__chevron {
+  color: var(--nswmesh-accent);
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.nswmesh-region-details summary:hover {
+  color: var(--nswmesh-accent);
+}
+
+.nswmesh-region-details summary:hover .nswmesh-region-details__chevron {
+  color: var(--nswmesh-accent);
+}
+
+.nswmesh-region-details__label {
+  font-family: var(--ifm-heading-font-family);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.nswmesh-region-details[open] .nswmesh-region-details__label {
+  background: linear-gradient(90deg, #ff6a00, #e11d48);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nswmesh-region-details .nswmesh-bots-table {
+  padding: 0.3rem 1.5rem 0.4rem 1.5rem;
+}
+
 .pagination-nav__link {
   background: var(--ifm-background-surface-color);
   border-color: var(--ifm-toc-border-color);
