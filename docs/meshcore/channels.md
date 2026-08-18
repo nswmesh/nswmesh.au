@@ -88,7 +88,7 @@ Useful channels used mesh-wide.
 | Public | None (Unscoped) | General chat for all mesh users. |
 | `#test` | `au-nsw` or IATA | Connection testing. Bots may auto-reply to `test`, `ping`, or `path`. |
 | `#emergency` | None | Emergency communications only. |
-| `#alerts` | None | Automatic situation alerts such as fires. |
+| `#alert` | None | Automatic situation alerts such as fires. |
 
 ### Regional Channels
 
@@ -106,6 +106,7 @@ Scoped to a particular region. These are also listed in each region's popup on t
 | `#nepean` | `au-nsw-syd` | Nepean conversation and coordination. |
 | `#bathurst` | `au-nsw-bhs` | Bathurst & Central West conversation and coordination. |
 | `#illawarra` | `au-nsw-wol` | Illawarra & Wollongong conversation and coordination. |
+| `#nowra` | `au-nsw-noa` | Nowra and Shoalhaven conversation and coordination.
 | `#riverina` | `TBC` | Wagga Wagga & Riverina conversation and coordination. |
 | `#farsouthcoast` | `TBC` | Far South Coast conversation and coordination. |
 
