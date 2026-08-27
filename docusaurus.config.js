@@ -1,5 +1,7 @@
 // @ts-check
 
+require('dotenv').config({quiet: true});
+
 const {DISCORD_INVITE_URL} = require('./src/constants/links.js');
 
 const repo = process.env.DOCUSAURUS_REPOSITORY || process.env.GITHUB_REPOSITORY || 'nswmesh/nswmesh.au';
@@ -28,6 +30,11 @@ const config = {
   i18n: {
     defaultLocale: 'en',
     locales: ['en']
+  },
+
+  // CARTO API Key (optional)
+  customFields: {
+    cartoApiKey: process.env.CARTO_API_KEY || ''
   },
 
   presets: [

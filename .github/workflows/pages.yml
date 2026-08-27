@@ -42,6 +42,7 @@ jobs:
         env:
           DOCUSAURUS_URL: ${{ vars.DOCUSAURUS_URL }}
           DOCUSAURUS_BASE_URL: ${{ vars.DOCUSAURUS_BASE_URL }}
+          CARTO_API_KEY: ${{ secrets.CARTO_API_KEY }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

@@ -69,12 +69,15 @@ const AUTO_ATTRIBUTION =
 const MAP_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const MAP_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
-function getTileConfig(baseLayer, colorMode) {
+function getTileConfig(baseLayer, colorMode, cartoApiKey) {
   if (baseLayer === 'map') {
     return {url: MAP_TILE_URL, attribution: MAP_ATTRIBUTION};
   }
 
-  return {url: AUTO_TILE_LAYERS[colorMode], attribution: AUTO_ATTRIBUTION};
+  const url = cartoApiKey
+    ? `${AUTO_TILE_LAYERS[colorMode]}?key=${encodeURIComponent(cartoApiKey)}`
+    : AUTO_TILE_LAYERS[colorMode];
+  return {url, attribution: AUTO_ATTRIBUTION};
 }
 
 function getStatus(feature) {
@@ -451,14 +454,14 @@ function RegionMapLegend() {
   );
 }
 
-export default function RegionMapInner({geojsonUrl, center, zoom, height, logoUrlLight, logoUrlDark}) {
+export default function RegionMapInner({geojsonUrl, center, zoom, height, logoUrlLight, logoUrlDark, cartoApiKey}) {
   const {colorMode} = useColorMode();
   const [features, setFeatures] = useState([]);
   const [loadFailed, setLoadFailed] = useState(false);
   const [regionsLoading, setRegionsLoading] = useState(true);
   const [baseLayer, setBaseLayer] = useState('auto');
   const [eggState, setEggState] = useState(0);
-  const tileConfig = getTileConfig(baseLayer, colorMode);
+  const tileConfig = getTileConfig(baseLayer, colorMode, cartoApiKey);
   const wrapperRef = useRef(null);
   const deepLinkHandledRef = useRef(false);
 
