@@ -98,6 +98,7 @@ Scoped to a particular region. These are also listed in each region's popup on t
 | Key | Suggested region scope | Purpose |
 | --- | --- | --- |
 | `#nsw` | `au-nsw` | State-wide coordination. |
+| `#act` | `au-act` | State-wide coordination. |
 | `#midnorthcoast` | `TBC` | Mid-North Coast conversation and coordination. |
 | `#newcastle` | `au-nsw-ntl` | Newcastle & Hunter conversation and coordination. |
 | `#sydney` | `au-nsw-syd` | Sydney metro conversation and coordination. |
@@ -108,7 +109,9 @@ Scoped to a particular region. These are also listed in each region's popup on t
 | `#illawarra` | `au-nsw-wol` | Illawarra & Wollongong conversation and coordination. |
 | `#nowra` | `au-nsw-noa` | Nowra and Shoalhaven conversation and coordination. |
 | `#riverina` | `TBC` | Wagga Wagga & Riverina conversation and coordination. |
+| `#canberra` | `au-act`| Canberra conversation and coordination. |
 | `#farsouthcoast` | `TBC` | Far South Coast conversation and coordination. |
+| `#hume` | `au-hume` | Albury & Wodonga conversation and coordination. |
 
 
 

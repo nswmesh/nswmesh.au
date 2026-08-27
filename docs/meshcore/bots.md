@@ -27,7 +27,7 @@ Bots are great for quick, basic diagnostics while out and about, confirming a pa
 
 | Bot | Channels | Scopes | Commands |
 | --- | --- | --- | --- |
-| Newiebot2300 | `#test` `#newiebot2300` | `Unscoped` | `catfact` `dadjoke` `joke` `multitest` `path` `ping` `test` |
+| Newiebot2300 | `#test` `#newiebot2300` | `Unscoped` | `catfact` `dadjoke` `help` `joke` `multitest` `path` `ping` `test` |
 
 </div>
 </details>
@@ -38,8 +38,8 @@ Bots are great for quick, basic diagnostics while out and about, confirming a pa
 
 | Bot | Channels | Scopes | Commands |
 | --- | --- | --- | --- |
-| MMTV - Bot | `#test` | `Unscoped` | `dadjoke` `hello` `help` `joke` `multitest` `path` `ping` `stats` `test` `trace` `wx` |
-| RoloJnr | `#test` `#rolojnr` | `au` `au-nsw` `au-nsw-syd` | `multitest` `path` `ping` `stats` `test` |
+| MMTV - Bot | `#test` | `au` `au-nsw` `au-nsw-syd` | `dadjoke` `hello` `help` `joke` `multitest` `path` `ping` `stats` `test` `trace` `wx` |
+| RoloJnr | `#test` `#rolojnr` | `au` `au-nsw` `au-nsw-syd` | `help` `multitest` `path` `ping` `stats` `test` |
 
 </div>
 </details>
@@ -50,7 +50,7 @@ Bots are great for quick, basic diagnostics while out and about, confirming a pa
 
 | Bot | Channels | Scopes | Commands |
 | --- | --- | --- | --- |
-| BathurstBot | `#test` `#nunya` `DMs` | `au-nsw` `au-nsw-bhs` | `multitest` `path` `ping` `prefix` `test` |
+| BathurstBot | `#test` `DMs` | `au-nsw` `au-nsw-bhs` | `help` `multitest` `path` `ping` `prefix` `test` |
 
 </div>
 </details>
@@ -62,6 +62,7 @@ Bots are great for quick, basic diagnostics while out and about, confirming a pa
 | Bot | Channels | Scopes | Commands |
 | --- | --- | --- | --- |
 | WolBot | `#wolbot` `DMs` | `au` `au-nsw` `au-nsw-wol` | `help` `multitest` `path` `ping` `stats` `test` |
+| Orion | `#hiking` `DMs` | `au-nsw` | `Out [Location]` `In` |
 
 </div>
 </details>
@@ -72,7 +73,7 @@ Bots are great for quick, basic diagnostics while out and about, confirming a pa
 
 | Bot | Channels | Scopes | Commands |
 | --- | --- | --- | --- |
-| Nowra Bot | `#test` `DMs` | `Unscoped (7 hops)` | `hello` `help` `multitest` `path` `ping` `test` |
+| Nowra Bot | `#test` `DMs` | `au-nsw-noa` | `hello` `help` `multitest` `path` `ping` `test` |
 
 </div>
 </details>
