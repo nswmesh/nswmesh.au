@@ -520,7 +520,15 @@ export default function RegionMapInner({geojsonUrl, center, zoom, height, logoUr
   return (
     <div
       ref={wrapperRef}
-      className={isBusyBasemap ? 'nswmesh-region-map nswmesh-region-map--busy-basemap' : 'nswmesh-region-map'}
+      className={
+        [
+          'nswmesh-region-map',
+          isBusyBasemap && 'nswmesh-region-map--busy-basemap',
+          baseLayer === 'map' && 'nswmesh-region-map--map-basemap'
+        ]
+          .filter(Boolean)
+          .join(' ')
+      }
       style={{height, width: '100%', position: 'relative'}}>
       {/* Hidden defs so the hover gradients can be referenced via url(#...) from region styles */}
       <svg width="0" height="0" style={{position: 'absolute'}}>

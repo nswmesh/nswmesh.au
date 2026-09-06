@@ -16,7 +16,7 @@ In MeshCore, the term "region" often refers to two distinct but related concepts
 
 Region scopes act as whitelist filters, creating a containment system for mesh traffic. Configuring a repeater with specific region scopes gives the repeater permission to forward traffic tagged with those scopes. In practice this "scopes" traffic down to an intentional area, keeping local traffic local and only reaching further into the mesh when is relevant. Note that this configuration does not affect a repeater's coverage or routing.
 
-For example, configuring a Wollongong repeater with `au`, `au-nsw`, and `au-nsw-wol` ensures it only repeats traffic relevant to those scopes. If a local conversation is happening up in Sydney using the `au-nsw-syd` scope, the Wollongong repeater will drop those packets. This contains the Sydney traffic within its own geographic region, preventing it from being needlessly repeated down south. The same happens at a state level on the `au-nsw` scope.
+For example, configuring a Wollongong repeater with `au`, `au-nsw`, and `au-nsw-wol` ensures it only repeats traffic relevant to those scopes. If a local conversation is happening up in Sydney using the `au-nsw-syd` scope, the Wollongong repeater will drop those packets. This contains the Sydney traffic within its own geographic region, preventing it from being needlessly repeated down south. The same happens at a state level, forwarding on `au-nsw` messages while ignoring other state scopes like `au-vic`.
 
 A Sydney-specific message belongs in a Sydney channel scoped to `au-nsw-syd`; a state-wide message belongs in an NSW channel scoped to `au-nsw`; general first contact can stay unscoped in Public. See [Channels](./channels) for how these scopes map to specific channels.
 
