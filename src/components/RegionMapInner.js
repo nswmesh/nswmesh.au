@@ -28,7 +28,7 @@ const CHECK_ICON_SVG =
   '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20.3 6.7 9 18l-5.3-5.3 1.4-1.4L9 15.2 18.9 5.3l1.4 1.4Z" /></svg>';
 
 function buildCliCommands(scopes) {
-  const lines = scopes.flatMap((scope) => [`region put ${scope}`, `region allowf ${scope}`]);
+  const lines = scopes.flatMap((scope) => [`region put ${scope}` ]);
   lines.push('region save');
   return lines.join('\n');
 }

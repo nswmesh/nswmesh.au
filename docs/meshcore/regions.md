@@ -68,9 +68,9 @@ An example configuration would be as follows:<br/>
 
 | Region | Suggested use | CLI command | Who |
 | --- | --- | --- | --- |
-| `au` | Australia-wide scoped traffic. | <CopyCommand command="region put au" /><br /><CopyCommand command="region allowf au" /> | Everyone |
-| `au-nsw` | NSW-wide scoped traffic. | <CopyCommand command="region put au-nsw" /><br /><CopyCommand command="region allowf au-nsw" /> | Everyone |
-| `au-nsw-syd` | Sydney scoped traffic. | <CopyCommand command="region put au-nsw-syd" /><br /><CopyCommand command="region allowf au-nsw-syd" /> | Sydney |
+| `au` | Australia-wide scoped traffic. | <CopyCommand command="region put au" /> | Everyone |
+| `au-nsw` | NSW-wide scoped traffic. | <CopyCommand command="region put au-nsw" /> | Everyone |
+| `au-nsw-syd` | Sydney scoped traffic. | <CopyCommand command="region put au-nsw-syd" /> | Sydney |
 | Save | Save the regions. | <CopyCommand command="region save" /> | Everyone |
 
 ## Companions
