@@ -786,7 +786,7 @@ pre {
   box-shadow: none;
   color: #f43f5e;
   font-family: var(--ifm-heading-font-family);
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 700;
   text-align: center;
   transition: color 0.15s ease-out, opacity 0.15s ease-out;
@@ -812,17 +812,14 @@ pre {
   color: #9ca3af;
 }
 
-/* A thin outline for OSM map to make labels more readable. Using 8 shadows as the outline option reportedly has issues on some devices */
-.nswmesh-region-map--busy-basemap .leaflet-tooltip.nswmesh-region-label:not(.nswmesh-region-label--hover) {
-  text-shadow:
-    -1px -1px 0 #fff,
-    0 -1px 0 #fff,
-    1px -1px 0 #fff,
-    -1px 0 0 #fff,
-    1px 0 0 #fff,
-    -1px 1px 0 #fff,
-    0 1px 0 #fff,
-    1px 1px 0 #fff !important;
+/* A thin stroke makes labels readable against either tile style. */
+.nswmesh-region-map .leaflet-tooltip.nswmesh-region-label:not(.nswmesh-region-label--hover) .nswmesh-region-label__text {
+  -webkit-text-stroke: 3px #fff;
+  paint-order: stroke fill;
+}
+
+[data-theme='dark'] .nswmesh-region-map:not(.nswmesh-region-map--map-basemap) .leaflet-tooltip.nswmesh-region-label:not(.nswmesh-region-label--hover) .nswmesh-region-label__text {
+  -webkit-text-stroke-color: var(--nswmesh-navy);
 }
 
 .nswmesh-region-hover,

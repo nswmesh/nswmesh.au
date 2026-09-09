@@ -12,10 +12,11 @@ const sidebars = {
       items: [
         'meshcore/overview',
         'meshcore/frequency',
+        'meshcore/regions',
         {
           type: 'doc',
           id: 'meshcore/channels',
-          label: 'Channels and Regions'
+          label: 'Channels'
         },
         'meshcore/repeaters',
         'meshcore/observers',

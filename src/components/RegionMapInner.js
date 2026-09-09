@@ -28,7 +28,7 @@ const CHECK_ICON_SVG =
   '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20.3 6.7 9 18l-5.3-5.3 1.4-1.4L9 15.2 18.9 5.3l1.4 1.4Z" /></svg>';
 
 function buildCliCommands(scopes) {
-  const lines = scopes.flatMap((scope) => [`region put ${scope}`, `region allowf ${scope}`]);
+  const lines = scopes.flatMap((scope) => [`region put ${scope}` ]);
   lines.push('region save');
   return lines.join('\n');
 }
@@ -429,7 +429,7 @@ function RegionMapLegend() {
                 <span className="nswmesh-region-map__legend-swatch nswmesh-region-map__legend-swatch--active" />
                 Active
               </div>
-              <p className="nswmesh-region-map__legend-description">Established, with channels and scopes in use.</p>
+              <p className="nswmesh-region-map__legend-description">Established, with channels and scopes in active use.</p>
             </div>
             <div className="nswmesh-region-map__legend-item">
               <div className="nswmesh-region-map__legend-item-label">
@@ -437,7 +437,7 @@ function RegionMapLegend() {
                 Tentative
               </div>
               <p className="nswmesh-region-map__legend-description">
-                Mesh activity, but details and borders aren&apos;t confirmed.
+                In a transitional period of being set up, with details not final and scopes partially or not yet in use.
               </p>
             </div>
             <div className="nswmesh-region-map__legend-item">
@@ -445,7 +445,8 @@ function RegionMapLegend() {
                 <span className="nswmesh-region-map__legend-swatch nswmesh-region-map__legend-swatch--future" />
                 Future
               </div>
-              <p className="nswmesh-region-map__legend-description">An early guess, entirely subject to change.</p>
+              <p className="nswmesh-region-map__legend-description">In initial planning or proposals, with all details subject to change.
+              </p>
             </div>
           </div>
         </div>
@@ -519,7 +520,15 @@ export default function RegionMapInner({geojsonUrl, center, zoom, height, logoUr
   return (
     <div
       ref={wrapperRef}
-      className={isBusyBasemap ? 'nswmesh-region-map nswmesh-region-map--busy-basemap' : 'nswmesh-region-map'}
+      className={
+        [
+          'nswmesh-region-map',
+          isBusyBasemap && 'nswmesh-region-map--busy-basemap',
+          baseLayer === 'map' && 'nswmesh-region-map--map-basemap'
+        ]
+          .filter(Boolean)
+          .join(' ')
+      }
       style={{height, width: '100%', position: 'relative'}}>
       {/* Hidden defs so the hover gradients can be referenced via url(#...) from region styles */}
       <svg width="0" height="0" style={{position: 'absolute'}}>

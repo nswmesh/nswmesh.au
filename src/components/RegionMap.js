@@ -3,7 +3,7 @@ import BrowserOnly from '@docusaurus/BrowserOnly';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import {useBaseUrlUtils} from '@docusaurus/useBaseUrl';
 
-export default function RegionMap({geojson, center = [-33.0, 150.8], zoom = 7, height = '500px'}) {
+export default function RegionMap({geojson, center = [-33.0, 150.8], zoom = 6, height = '500px'}) {
   const {withBaseUrl} = useBaseUrlUtils();
   const {siteConfig} = useDocusaurusContext();
   const geojsonUrl = withBaseUrl(geojson);
