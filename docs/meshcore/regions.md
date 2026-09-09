@@ -18,7 +18,7 @@ To understand how regions work in practice, it helps to distinguish between the 
 
 ### Scope Format
 
-Region scopes in NSW use a hierarchy formatted as `<country>-<state>-<iata>`:
+Region scopes in NSW use a naming convention formatted as `<country>-<state>-<iata>`:
 
 1. **Country Scope (`au`):** Reaches repeaters across the entire country.
 2. **State Scope (`au-nsw`):** Reaches repeaters across the entire state.
@@ -32,7 +32,7 @@ Region scopes act as simple whitelist filters on repeaters. Configuring a repeat
 
 For example, a Wollongong repeater configured with `au`, `au-nsw`, and `au-nsw-wol` will forward local chatter tagged with `au-nsw-wol`. However, if a local conversation occurs in Sydney tagged with `au-nsw-syd`, the Wollongong repeater ignores those packets. This keeps Sydney traffic local, preserving Wollongong’s own airtime and keeping network reliability up. 
 
-This isolation ensures high activity in one area won't impact the mesh elsewhere. Heavy chatter in Newcastle shouldn't cause two neighbours in Sydney to drop messages. The same logic applies at the state level: containing `au-nsw` traffic prevents NSW targeted chatter from polluting the Victoria mesh. Traffic that is unscoped (represented by the `*` scope in firmware) or scoped to `au` will traverse the entire mesh.
+This selective isolation helps limit the impact on other regions when one region has high activity. Heavy chatter in Newcastle shouldn't cause two neighbours in Sydney to drop messages. The same logic applies at the state level: containing `au-nsw` traffic prevents NSW targeted chatter from polluting the Victoria mesh. At present, traffic that is unscoped (represented by the `*` scope in firmware) or scoped to `au` will traverse the entire mesh. Note that in future it is likely that repeaters will start to block unscoped traffic, preferring instead that all traffic intended to flood the entire network use the `au` scope.
 
 For details on how these scopes map to channels, see the [Channels](./channels) page.
 
@@ -57,9 +57,9 @@ As mentioned above, configuring region scopes tells a repeater what it should re
 
 All NSW (and ACT) repeaters should allow `au` and `au-nsw`. Generally, you should only add the IATA-level region scope that matches the repeater's geographic location. For example, Sydney repeaters should allow `au-nsw-syd`, while Newcastle and Hunter repeaters should allow `au-nsw-ntl`.
 
-While the suggested scopes work for the vast majority of situations, region boundaries aren't always set in stone. You might opt to add a neighboring scope if:
-* Your repeater provides an irreplaceable link (e.g. two WOL repeaters rely on a SYD repeater in the middle to connect to each other).
-* Your repeater provides significant ground coverage into a neighboring region that lacks local repeaters.
+While the suggested scopes work for the vast majority of situations, region boundaries aren't always set in stone. You might opt to add a neighbouring scope if:
+* Your repeater provides an irreplaceable link within a neighbouring region (e.g. if two WOL repeaters rely on a SYD repeater in the middle to connect to each other).
+* Your repeater provides significant ground coverage into a neighbouring region that lacks local repeaters (e.g. if several users in WOL solely rely on a SYD repeater's coverage, allowing WOL traffic allows them to message on their local scope).
 
 However, exercise extra caution when adding extra scopes, especially on high-profile repeaters with wide coverage. Over-allowing scopes dissolves the boundaries regions are meant to create. For example, if a high-coverage WOL repeater also allows SYD traffic, the border between the two regions is partially dissolved. It is a delicate balance between providing useful coverage and limiting cross-regional traffic pollution.
 
